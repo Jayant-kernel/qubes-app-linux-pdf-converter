@@ -77,6 +77,25 @@ class TC_FileClient(unittest.TestCase):
         params = run_mock.await_args.args[0]
         self.assertEqual(params["ocr_lang"], "eng")
 
+    def test_no_ocr_is_forwarded(self):
+        runner = CliRunner()
+
+        with runner.isolated_filesystem():
+            Path("report.pdf").write_bytes(b"%PDF-1.7\n")
+
+            with mock.patch(
+                "qubespdfconverter.file_client.pdf_client.run",
+                new=mock.AsyncMock(return_value=False),
+            ) as run_mock:
+                result = runner.invoke(
+                    file_client.main,
+                    ["--no-ocr", "report.pdf"]
+                )
+
+        self.assertEqual(result.exit_code, 0)
+        params = run_mock.await_args.args[0]
+        self.assertTrue(params["no_ocr"])
+
 
 if __name__ == "__main__":
     unittest.main()

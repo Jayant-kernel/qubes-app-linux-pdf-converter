@@ -8,7 +8,7 @@ SYNOPSIS
 ========
 :command:`qvm-convert-pdf` [-h] [--batch SIZE] [--archive PATH] [--in-place]
                             [--resolution RESOLUTION] [--password PASSWORD]
-                            [--ocr-lang LANGUAGE]
+                            [--ocr-lang LANGUAGE] [--no-ocr]
 
 OPTIONS
 =======
@@ -42,6 +42,10 @@ OPTIONS
    Tesseract language code to use for OCR output. Tesseract uses three-letter
    language codes such as ``eng`` for English, not two-letter locale codes.
 
+.. option:: --no-ocr
+
+   Do not use the saved OCR setting for this run.
+
 DESCRIPTION
 ===========
 
@@ -51,8 +55,9 @@ potentially untrusted (e.g. maliciously malformed) PDF files into safe-to-view
 PDF files.
 
 For other supported file types, use ``qvm-convert-file``. It currently handles
-PDF, DOCX, ODT, XLSX, and ODS inputs, with LibreOffice required only for the
-Office document and spreadsheet formats.
+PDF, DOCX, ODT, XLSX, ODS, and common video inputs. LibreOffice is required
+only for the Office document and spreadsheet formats, and FFmpeg is required
+only for video formats.
 
 This is done by having a Disposable VM render each page of a PDF file into a 
 very simple representation (RGB bitmap) that (presumably) leaves no room for 
@@ -79,7 +84,8 @@ template to enable those formats.
 If ``--ocr-lang`` is not set, the command uses the OCR setting saved by
 ``qvm-convert-pdf-ocr-settings``. The graphical file manager action asks for
 this setting the first time it is used, and the settings tool can be launched
-later from the application menu.
+later from the application menu. Use ``--no-ocr`` to ignore the saved OCR
+setting for one command.
 
 AUTHORS
 =======

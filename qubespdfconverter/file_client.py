@@ -57,6 +57,11 @@ from qubespdfconverter import client as pdf_client
     metavar="LANGUAGE",
     help="Tesseract language code for OCR output"
 )
+@click.option(
+    "--no-ocr",
+    is_flag=True,
+    help="Do not use the saved OCR setting for this run"
+)
 @click.argument(
     "files",
     type=Path,

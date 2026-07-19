@@ -8,7 +8,7 @@ SYNOPSIS
 ========
 :command:`qvm-convert-file` [-h] [--batch SIZE] [--archive PATH] [--in-place]
                              [--resolution RESOLUTION] [--password PASSWORD]
-                             [--ocr-lang LANGUAGE] [FILES ...]
+                             [--ocr-lang LANGUAGE] [--no-ocr] [FILES ...]
 
 OPTIONS
 ========
@@ -42,12 +42,16 @@ OPTIONS
    Tesseract language code to use for OCR output. Tesseract uses three-letter
    language codes such as ``eng`` for English, not two-letter locale codes.
 
+.. option:: --no-ocr
+
+   Do not use the saved OCR setting for this run.
+
 DESCRIPTION
 ===========
 
 Qubes file converter is a Qubes Application that uses Qubes' flexible qrexec
 (inter-VM communication) infrastructure and Disposable VMs to convert
-potentially untrusted files into safe-to-view PDF files.
+potentially untrusted files into safe-to-view files.
 
 Supported input formats:
 
@@ -62,10 +66,16 @@ Supported input formats:
      - Converted through LibreOffice, then through the PDF rendering pipeline.
    * - XLSX, ODS
      - Converted through LibreOffice, then through the PDF rendering pipeline.
+   * - MP4, OGV, MOV, WEBM, MKV, AVI
+     - Decoded to raw RGB frames, then encoded into an Ogg/Theora video.
 
 For LibreOffice-backed formats, the converter first creates an intermediate PDF
 inside the conversion environment, then uses the same bitmap-based PDF
 conversion pipeline.
+
+For video formats, the converter sends raw RGB frames from the conversion
+environment and writes a ``.trusted.ogv`` file next to the original file. Audio
+is not preserved.
 
 File type detection is performed on the server side. Unsupported file types are
 rejected instead of being converted.
@@ -74,13 +84,18 @@ LibreOffice is optional for PDF conversion, but it is required for the supported
 office document and spreadsheet formats. If LibreOffice is missing, install it
 in the relevant template.
 
+FFmpeg is optional for PDF, document, and spreadsheet conversion, but it is
+required for the supported video formats. If FFmpeg is missing, install it in
+the relevant template.
+
 As with qvm-convert-pdf, the converted PDF may be larger than the original file
 and may lose structural information such as searchable text.
 
 If ``--ocr-lang`` is set, the converter adds a searchable text layer to the
 trusted PDF after the pages have been rendered to safe bitmaps. If
 ``--ocr-lang`` is not set, the command uses the OCR setting saved by
-``qvm-convert-pdf-ocr-settings``.
+``qvm-convert-pdf-ocr-settings``. Use ``--no-ocr`` to ignore the saved OCR
+setting for one command.
 
 OCR is optional. For English OCR, install ``python3-fitz`` and
 ``tesseract-ocr-eng`` on Debian templates, or ``python3-PyMuPDF`` and
