@@ -1,14 +1,12 @@
-==================
-QVM-CONVERT-PDF(1)
-==================
+.. program:: qvm-convert-pdf
 
-NAME
-====
-qvm-convert-pdf - converts potentially untrusted PDFs to a safe-to-view PDF
+====================================================
+``qvm-convert-pdf`` -- |qvm-convert-pdf-description|
+====================================================
 
 SYNOPSIS
 ========
-:command: `qvm-convert-pdf` [-h] [--batch SIZE] [--archive PATH] [--in-place]
+:command:`qvm-convert-pdf` [-h] [--batch SIZE] [--archive PATH] [--in-place]
                             [--resolution RESOLUTION] [--password PASSWORD]
                             [--ocr-lang LANGUAGE]
 
