@@ -281,6 +281,43 @@ with zipfile.ZipFile(filename, "w") as ods:
         if p.returncode != 0:
             self.skipTest('failed to create test ods: {}'.format(stdout))
 
+    def create_pptx(self, filename, text):
+        '''Create PPTX file with given (textual) content
+
+        :param filename: output filename
+        :param text: text to be placed in the presentation
+        '''
+        source = filename.rsplit('.', 1)[0] + '.fodp'
+        presentation = '''<?xml version="1.0" encoding="UTF-8"?>
+<office:document
+  xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+  xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
+  xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0"
+  xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+  xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+  office:mimetype="application/vnd.oasis.opendocument.presentation"
+  office:version="1.2">
+  <office:body>
+    <office:presentation>
+      <draw:page draw:name="page1">
+        <draw:frame presentation:class="title"
+          svg:x="1cm" svg:y="1cm" svg:width="20cm" svg:height="3cm">
+          <draw:text-box><text:p>{}</text:p></draw:text-box>
+        </draw:frame>
+      </draw:page>
+    </office:presentation>
+  </office:body>
+</office:document>
+'''.format(text)
+        p = self.vm.run(
+            'cat > "{}" && libreoffice --headless --convert-to pptx '
+            '--outdir . "{}" 2>&1'.format(source, source),
+            passio_popen=True)
+        (stdout, _) = p.communicate(presentation.encode())
+        if p.returncode != 0:
+            self.skipTest('failed to create test pptx: {}'.format(stdout))
+        self.vm.run('rm -f "{}"'.format(source), wait=True)
+
     def create_video(self, filename):
         '''Create a tiny video file from generated frames
 
@@ -480,7 +517,27 @@ with zipfile.ZipFile(filename, "w") as ods:
         self.assertEqual(self.vm.run(
             'diff "orig.ods" "QubesUntrustedPDFs/test.ods"', wait=True), 0)
 
-    def test_009_video(self):
+    def test_009_pptx(self):
+        if self.vm.run('command -v libreoffice >/dev/null', wait=True) != 0:
+            self.skipTest('libreoffice not installed')
+        self.create_pptx('test.pptx', 'This is test')
+        p = self.vm.run(
+            'cp test.pptx orig.pptx; qvm-convert-file test.pptx 2>&1',
+            passio_popen=True)
+        (stdout, _) = p.communicate()
+        self.assertEqual(
+            p.returncode, 0, 'qvm-convert-file failed: {}'.format(stdout))
+        self.assertEqual(
+            self.vm.run('test -r "test.trusted.pdf"', wait=True), 0)
+        trusted_info = self.get_pdfinfo('test.trusted.pdf')
+        self.assertGreaterEqual(int(trusted_info['Pages']), 1)
+
+        self.assertEqual(
+            self.vm.run('test -r "QubesUntrustedPDFs/test.pptx"', wait=True), 0)
+        self.assertEqual(self.vm.run(
+            'diff "orig.pptx" "QubesUntrustedPDFs/test.pptx"', wait=True), 0)
+
+    def test_010_video(self):
         if self.vm.run('command -v ffmpeg >/dev/null', wait=True) != 0:
             self.skipTest('ffmpeg not installed')
         self.create_video('test.mp4')

@@ -29,11 +29,12 @@ Usage
     Total Sanitized Files: 2/3
 
 The generic `qvm-convert-file` command also supports LibreOffice-backed
-document and spreadsheet conversion for DOCX, ODT, XLSX, and ODS files. Those
-formats require LibreOffice to be installed in the relevant template. It also
-supports common video formats by re-encoding them to `.trusted.ogv` with
-FFmpeg, when FFmpeg is installed in the relevant template. Video data crosses
-the qrexec boundary as raw RGB frames; audio is not preserved.
+document, spreadsheet, and presentation conversion for DOCX, ODT, XLSX, ODS,
+and PPTX files. Those formats require LibreOffice to be installed in the
+relevant template. It also supports common video formats by re-encoding them
+to `.trusted.ogv` with FFmpeg, when FFmpeg is installed in the relevant
+template. Video data crosses the qrexec boundary as raw RGB frames; audio is
+not preserved.
 
 Authors
 ---------
