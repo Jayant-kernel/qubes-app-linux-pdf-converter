@@ -135,6 +135,15 @@ class TC_ServerPassword(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(renderer.resolution, 200)
         self.assertEqual(renderer.suffix, ".odt")
 
+    def test_create_renderer_returns_odp_renderer(self):
+        """The server dispatch table creates the ODP renderer."""
+        with tempfile.NamedTemporaryFile(suffix=".odp") as f:
+            renderer = create_renderer("odp", Path(f.name), resolution=200)
+
+        self.assertIsInstance(renderer, LibreOfficeDocumentRenderer)
+        self.assertEqual(renderer.resolution, 200)
+        self.assertEqual(renderer.suffix, ".odp")
+
     def test_create_renderer_returns_pptx_renderer(self):
         """The server dispatch table creates the PPTX renderer."""
         with tempfile.NamedTemporaryFile(suffix=".pptx") as f:
@@ -210,6 +219,18 @@ class TC_ServerPassword(unittest.IsolatedAsyncioTestCase):
             renderer_name = renderer_name_for_path(Path(f.name))
 
         self.assertEqual(renderer_name, "odt")
+
+    def test_server_dispatches_odp_mime_to_odp_renderer_name(self):
+        """ODP MIME detection selects the shared document renderer."""
+        mime_type = "application/vnd.oasis.opendocument.presentation"
+
+        with tempfile.NamedTemporaryFile(suffix=".odp") as f, mock.patch(
+            "qubespdfconverter.server.detect_mime",
+            return_value=mime_type,
+        ):
+            renderer_name = renderer_name_for_path(Path(f.name))
+
+        self.assertEqual(renderer_name, "odp")
 
     def test_server_dispatches_pptx_mime_to_pptx_renderer_name(self):
         """PPTX MIME detection selects the shared document renderer."""
@@ -351,6 +372,27 @@ class TC_ServerPassword(unittest.IsolatedAsyncioTestCase):
             def fake_run(cmd, capture_output, check):
                 if cmd[0] == "libreoffice":
                     self.assertEqual(Path(cmd[-1]).suffix, ".pptx")
+                    Path(cmd[-1]).with_suffix(".pdf").write_bytes(b"%PDF-1.7")
+                    return mock.Mock(stdout=b"")
+
+                self.assertEqual(cmd[0], "pdfinfo")
+                return mock.Mock(stdout=b"Pages:           2\n")
+
+            with mock.patch("subprocess.run", side_effect=fake_run):
+                self.assertEqual(renderer.page_count(), 2)
+
+    def test_odp_renderer_uses_odp_extension_for_libreoffice(self):
+        """ODP rendering uses the shared LibreOffice path with an ODP input."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir, "source.odp")
+            path.write_bytes(b"odp")
+            renderer = LibreOfficeDocumentRenderer(
+                path, resolution=200, suffix=".odp"
+            )
+
+            def fake_run(cmd, capture_output, check):
+                if cmd[0] == "libreoffice":
+                    self.assertEqual(Path(cmd[-1]).suffix, ".odp")
                     Path(cmd[-1]).with_suffix(".pdf").write_bytes(b"%PDF-1.7")
                     return mock.Mock(stdout=b"")
 

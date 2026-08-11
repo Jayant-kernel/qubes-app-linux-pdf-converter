@@ -325,6 +325,7 @@ class VideoRenderer:
 
 RENDERERS = {
     "docx": functools.partial(LibreOfficeDocumentRenderer, suffix=".docx"),
+    "odp": functools.partial(LibreOfficeDocumentRenderer, suffix=".odp"),
     "ods": functools.partial(LibreOfficeDocumentRenderer, suffix=".ods"),
     "odt": functools.partial(LibreOfficeDocumentRenderer, suffix=".odt"),
     "pdf": PdfRenderer,
@@ -336,6 +337,7 @@ RENDERERS = {
 MIME_DISPATCH = {
     "application/pdf": "pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ("docx"),
+    "application/vnd.oasis.opendocument.presentation": "odp",
     "application/vnd.oasis.opendocument.spreadsheet": "ods",
     "application/vnd.oasis.opendocument.text": "odt",
     "application/vnd.openxmlformats-officedocument.presentationml.presentation": (
